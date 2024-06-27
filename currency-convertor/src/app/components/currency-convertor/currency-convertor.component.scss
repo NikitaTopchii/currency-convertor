@@ -3,14 +3,25 @@
   .currency-convertor{
 
     &__wrapper{
-      width: 80vw;
-      height: 400px;
+      width: 40vw;
       background: #fff;
       margin-top: 10px;
       box-shadow: 0px 0px 10px 0px #00000026;
       border-radius: 12px;
       box-sizing: border-box;
       padding: 20px;
+    }
+
+    &__main-currency-info{
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+      justify-content: center;
+      align-items: center;
+    }
+
+    &__currency-info-title-wrapper{
+      width: 50%;
     }
   }
 }

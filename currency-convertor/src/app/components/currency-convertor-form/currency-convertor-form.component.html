@@ -1,0 +1,61 @@
+<form [formGroup]="form" class="main-form">
+  <div class="main-form__wrapper">
+    <ng-container>
+      <div class="main-form__currency-element">
+        <div class="main-form__currency-selector">
+          <mat-form-field>
+            <mat-label>From</mat-label>
+            <mat-select formControlName="currencyFirst">
+              @for (currency of getCurrencyList(); track $index){
+                <mat-option value="{{currency}}">{{currency}}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <mat-form-field>
+          <input matInput formControlName="firstValue">
+          @if(form.get('firstValue')?.hasError('required')){
+            <mat-error>input required</mat-error>
+          }
+          @if(form.get('firstValue')?.hasError('number') && !form.get('firstValue')?.hasError('required')){
+            <mat-error>only number are allowed</mat-error>
+          }
+        </mat-form-field>
+      </div>
+    </ng-container>
+    <div class="main-form__swap-button-wrapper">
+      <button class="main-form__swap-button" (click)="swapCurrency()" [disabled]="form.invalid">
+        @if(form.invalid){
+          <img width="26" height="26" src="https://img.icons8.com/?size=100&id=EuvWjkXOn2O3&format=png&color=ffffff" alt="sorting-arrows-horizontal--v2"/>
+        } @else {
+          <img width="26" height="26" src="https://img.icons8.com/pastel-glyph/64/sorting-arrows-horizontal--v2.png" alt="sorting-arrows-horizontal--v2"/>
+        }
+      </button>
+    </div>
+    <ng-container>
+      <div class="main-form__currency-element">
+        <div class="main-form__currency-selector">
+          <mat-form-field>
+            <mat-label>To</mat-label>
+            <mat-select formControlName="currencySecond">
+              @for (currency of getCurrencyList(); track $index){
+                <mat-option value="{{currency}}">{{currency}}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <mat-form-field>
+          <input matInput formControlName="secondValue">
+          @if(form.get('secondValue')?.hasError('required')){
+            <mat-error>input required</mat-error>
+          }
+          @if(form.get('secondValue')?.hasError('number') && !form.get('secondValue')?.hasError('required')){
+            <mat-error>only number are allowed</mat-error>
+          }
+        </mat-form-field>
+      </div>
+    </ng-container>
+  </div>
+  <button class="main-form__convert-button" (click)="convertCurrency()" [disabled]="form.invalid">convert</button>
+</form>
+

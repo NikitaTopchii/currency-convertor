@@ -1,19 +1,9 @@
 <div class="currency-convertor">
   <div class="currency-convertor__wrapper">
-    <div class="currency-convertor__main-currency-form">
-      <form [formGroup]="form">
-<!--        <mat-form-field hintLabel="Max 10 characters">-->
-<!--          <mat-label>Enter some input</mat-label>-->
-<!--          <input matInput #input maxlength="10" placeholder="Ex. Nougat"/>-->
-<!--        </mat-form-field>-->
-
-<!--        <mat-form-field>-->
-<!--          <mat-label>Select me</mat-label>-->
-<!--          <mat-select>-->
-<!--            <mat-option value="option">Option</mat-option>-->
-<!--          </mat-select>-->
-<!--        </mat-form-field>-->
-      </form>
+    <div class="currency-convertor__main-currency-info">
+      <ng-container>
+        <app-currency-convertor-form></app-currency-convertor-form>
+      </ng-container>
     </div>
   </div>
 </div>

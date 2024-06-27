@@ -4,7 +4,8 @@ import {AppComponent} from "./app.component";
 import {BrowserModule} from "@angular/platform-browser";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import {AppRoutingModule} from "./app-routing.module";
-import {RouterOutlet} from "@angular/router";
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import {HttpClientModule} from "@angular/common/http";
 
 
 @NgModule({
@@ -16,7 +17,11 @@ import {RouterOutlet} from "@angular/router";
     BrowserModule,
     BrowserAnimationsModule,
     AppRoutingModule,
-    RouterOutlet
+    HttpClientModule
+  ],
+  bootstrap: [AppComponent],
+  providers: [
+    provideAnimationsAsync()
   ]
 })
 export class AppModule { }
