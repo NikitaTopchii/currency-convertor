@@ -6,6 +6,7 @@ import {MatSelect} from "@angular/material/select";
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
 import {CurrencyDataService} from "../../../core/currency-data-service/currency-data.service";
 import {CurrencyValidatorService} from "../../../core/validators/currency-validator.service";
+import {catchError, debounceTime, distinctUntilChanged, Observable, of, switchMap} from "rxjs";
 
 @Component({
   selector: 'app-currency-convertor-form',
@@ -25,72 +26,104 @@ import {CurrencyValidatorService} from "../../../core/validators/currency-valida
 export class CurrencyConvertorFormComponent implements OnInit{
 
   private fb = inject(FormBuilder);
-  private currencyDataService = inject(CurrencyDataService)
+  private currencyDataService = inject(CurrencyDataService);
   private currencyValidatorsService = inject(CurrencyValidatorService);
 
   form: FormGroup;
-
   private currencyList: string[] = ['USD', 'UAH', 'EUR'];
+  private updating: boolean = false;
 
   constructor() {
     this.form = this.currencyConvertorForm;
   }
 
   ngOnInit() {
-
-    this.getCurrencyConvertData();
-
-    this.form.get('currencyFirst')?.valueChanges.subscribe(() => {
-      this.convertCurrency();
-    })
-    this.form.get('currencySecond')?.valueChanges.subscribe(() => {
-      this.convertCurrency();
-    })
+    this.subscribeToFormChanges();
+    this.convertCurrency();
   }
 
-  getCurrencyConvertData(){
-    const firstCurrencyValue = this.form.get('currencyFirst')?.value;
-    const secondCurrencyValue = this.form.get('currencySecond')?.value;
+  private subscribeToFormChanges() {
+    const currencyValueControls: string[] = ['firstValue', 'firstValue'];
+    currencyValueControls.forEach(control => {
+      this.form.get(control)?.valueChanges
+        .pipe(
+          debounceTime(300),
+          distinctUntilChanged()
+        )
+        .subscribe(() => {
+          if (!this.updating) {
+            this.convertCurrency(control);
+          }
+        });
+    })
 
-    this.currencyDataService.getCurrencyDataByValue(firstCurrencyValue, secondCurrencyValue).subscribe((currencyData) => {
+    const currencyControls = ['currencyFirst', 'currencySecond'];
+    currencyControls.forEach(control => {
+      this.form.get(control)?.valueChanges.subscribe(() => {
+        this.convertCurrency();
+      });
+    });
+  }
 
-      const firstCurrencyValue = this.form.get('firstValue')?.value;
-
-      this.form.patchValue({
-        secondValue: firstCurrencyValue * currencyData.currencyCoefficient
+  private getCurrencyConvertData(firstCurrency: string, secondCurrency: string): Observable<number> {
+    return this.currencyDataService.getCurrencyDataByValue(firstCurrency, secondCurrency).pipe(
+      switchMap(currencyData => of(currencyData.currencyCoefficient)),
+      catchError(error => {
+        console.error('Error fetching currency data', error);
+        return of(1);
       })
-    })
+    );
   }
 
-  get currencyConvertorForm(){
+  private get currencyConvertorForm(): FormGroup {
     return this.fb.group({
       firstValue: [1, [Validators.required, this.currencyValidatorsService.numberValidator]],
-      secondValue: [0, [Validators.required, this.currencyValidatorsService.numberValidator]],
+      secondValue: [1, [Validators.required, this.currencyValidatorsService.numberValidator]],
       currencyFirst: ['USD'],
       currencySecond: ['UAH'],
     });
   }
 
-  getCurrencyList(){
+  getCurrencyList(): string[] {
     return this.currencyList;
   }
 
-  swapCurrency(){
-
+  swapCurrency() {
     const firstCurrency = this.form.get('currencyFirst')?.value;
-    const secondCurrency= this.form.get('currencySecond')?.value;
-    const firstCurrencyValue = this.form.get('firstValue')?.value;
+    const secondCurrency = this.form.get('currencySecond')?.value;
+    const firstValue = this.form.get('firstValue')?.value;
 
     this.form.patchValue({
-      firstValue: firstCurrencyValue,
       currencyFirst: secondCurrency,
       currencySecond: firstCurrency,
-    })
+      firstValue: firstValue,
+    });
 
     this.convertCurrency();
   }
 
-  convertCurrency() {
-    this.getCurrencyConvertData();
+  private convertCurrency(changedField: string = 'firstValue') {
+    if (this.updating) return;
+
+    this.updating = true;
+
+    const firstCurrency = this.form.get('currencyFirst')?.value;
+    const secondCurrency = this.form.get('currencySecond')?.value;
+
+    this.getCurrencyConvertData(firstCurrency, secondCurrency).subscribe(coefficient => {
+      if (changedField === 'firstValue') {
+        const firstValue = this.form.get('firstValue')?.value;
+        this.form.patchValue({
+          secondValue: firstValue * coefficient
+        }, { emitEvent: false });
+      } else {
+        const secondValue = this.form.get('secondValue')?.value;
+        this.form.patchValue({
+          firstValue: secondValue / coefficient
+        }, { emitEvent: false });
+      }
+
+      this.updating = false;
+    });
   }
 }

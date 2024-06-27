@@ -3,6 +3,7 @@ import {HttpClient} from "@angular/common/http";
 import {inject} from "@angular/core";
 import {main_url} from "../../shared/application.context";
 import {map} from "rxjs";
+import {CurrencyData} from "../../shared/types/currency-data";
 
 @Injectable({
   providedIn: 'root'
@@ -18,7 +19,7 @@ export class CurrencyDataService {
 
     return this.http.get(main_url + firstCurrency + secondCurrency + '/prev', { params: { adjusted, apiKey }})
       .pipe(map((response:any) => response.results))
-      .pipe(map((data:any) => {
+      .pipe(map((data:any):CurrencyData => {
         return { currencyCoefficient: data[0].vw }
       }))
   }
