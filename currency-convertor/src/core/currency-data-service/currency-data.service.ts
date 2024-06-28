@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {inject} from "@angular/core";
-import {main_url} from "../../shared/application.context";
 import {catchError, map, mergeMap, Observable, of, retryWhen, switchMap, throttleTime, throwError, timer} from "rxjs";
 import {CurrencyData} from "../../shared/types/currency-data";
 import {ToastrService} from "ngx-toastr";
+import {environment} from "../../environments/environment";
 
 @Injectable({
   providedIn: 'root'
@@ -17,11 +17,13 @@ export class CurrencyDataService {
   private readonly retryDelay = 60000;
   private readonly retries = 5;
 
+  private readonly main_url = environment.apiUrl;
+
   getCurrencyDataByValue(firstCurrency: string, secondCurrency: string){
 
     const apiKey = 'AZfMpKfqODf4N8JenBq4cGlhi38NQeF0';
 
-    return this.http.get(main_url + firstCurrency + secondCurrency + '/prev', { params: { apiKey }})
+    return this.http.get(this.main_url + firstCurrency + secondCurrency + '/prev', { params: { apiKey }})
       .pipe(map((response:any) => response.results))
       .pipe(map((data:any):CurrencyData => {
         return { currencyCoefficient: data[0].vw }
