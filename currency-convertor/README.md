@@ -25,3 +25,7 @@ Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To u
 ## Further help
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+## Interface
+
+![image](https://github.com/NikitaTopchii/currency-convertor/assets/106115517/af1a650b-e801-4dc5-911c-af60a97c8f98)
