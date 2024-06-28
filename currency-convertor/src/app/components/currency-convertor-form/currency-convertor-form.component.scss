@@ -69,6 +69,15 @@
       }
     }
   }
+
+  @media (max-width: 700px) {
+    .main-form{
+
+      &__wrapper{
+        flex-direction: column;
+      }
+    }
+  }
 }
 
 ::ng-deep{

@@ -24,4 +24,31 @@
       width: 50%;
     }
   }
+
+  @media (max-width: 1446px) {
+    .currency-convertor{
+
+      &__wrapper{
+        width: 55vw;
+      }
+    }
+  }
+
+  @media (max-width: 1000px) {
+    .currency-convertor{
+
+      &__wrapper{
+        width: 80vw;
+      }
+    }
+  }
+
+  @media (max-width: 700px) {
+    .currency-convertor{
+
+      &__wrapper{
+        width: 90vw;
+      }
+    }
+  }
 }
