@@ -25,4 +25,31 @@
     }
   }
 
+  @media (max-width: 1446px) {
+    .header{
+
+      &__wrapper{
+        width: 55vw;
+      }
+    }
+  }
+
+  @media (max-width: 1000px) {
+    .header{
+
+      &__wrapper{
+        width: 80vw;
+      }
+    }
+  }
+
+  @media (max-width: 700px) {
+    .header{
+
+      &__wrapper{
+        width: 90vw;
+        flex-direction: column;
+      }
+    }
+  }
 }

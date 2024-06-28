@@ -6,7 +6,22 @@ import {MatSelect} from "@angular/material/select";
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
 import {CurrencyDataService} from "../../../core/currency-data-service/currency-data.service";
 import {CurrencyValidatorService} from "../../../core/validators/currency-validator.service";
-import {catchError, debounceTime, distinctUntilChanged, Observable, of, switchMap} from "rxjs";
+import {
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  mergeMap,
+  Observable,
+  of,
+  retryWhen,
+  switchMap,
+  throttleTime, throwError, timer
+} from "rxjs";
+import {ToastrService} from "ngx-toastr";
+import {log} from "@angular-devkit/build-angular/src/builders/ssr-dev-server";
+import {FormService} from "../../../core/form-service/form.service";
+
+type Currency = 'USD' | 'UAH' | 'EUR' | 'GBP';
 
 @Component({
   selector: 'app-currency-convertor-form',
@@ -27,14 +42,17 @@ export class CurrencyConvertorFormComponent implements OnInit{
 
   private fb = inject(FormBuilder);
   private currencyDataService = inject(CurrencyDataService);
-  private currencyValidatorsService = inject(CurrencyValidatorService);
+  private formService = inject(FormService);
 
   form: FormGroup;
-  private currencyList: string[] = ['USD', 'UAH', 'EUR'];
-  private updating: boolean = false;
+  private readonly currencyList: Currency[];
+  private updating: boolean;
+
 
   constructor() {
-    this.form = this.currencyConvertorForm;
+    this.form = this.formService.currencyConvertorForm;
+    this.currencyList = ['USD', 'UAH', 'EUR', 'GBP'];
+    this.updating = false;
   }
 
   ngOnInit() {
@@ -43,7 +61,7 @@ export class CurrencyConvertorFormComponent implements OnInit{
   }
 
   private subscribeToFormChanges() {
-    const currencyValueControls: string[] = ['firstValue', 'firstValue'];
+    const currencyValueControls: string[] = ['firstValue', 'secondValue'];
     currencyValueControls.forEach(control => {
       this.form.get(control)?.valueChanges
         .pipe(
@@ -65,39 +83,18 @@ export class CurrencyConvertorFormComponent implements OnInit{
     });
   }
 
-  private getCurrencyConvertData(firstCurrency: string, secondCurrency: string): Observable<number> {
-    return this.currencyDataService.getCurrencyDataByValue(firstCurrency, secondCurrency).pipe(
-      switchMap(currencyData => of(currencyData.currencyCoefficient)),
-      catchError(error => {
-        console.error('Error fetching currency data', error);
-        return of(1);
-      })
-    );
-  }
-
-  private get currencyConvertorForm(): FormGroup {
-    return this.fb.group({
-      firstValue: [1, [Validators.required, this.currencyValidatorsService.numberValidator]],
-      secondValue: [1, [Validators.required, this.currencyValidatorsService.numberValidator]],
-      currencyFirst: ['USD'],
-      currencySecond: ['UAH'],
-    });
-  }
-
-  getCurrencyList(): string[] {
+  public getCurrencyList(){
     return this.currencyList;
   }
 
-  swapCurrency() {
+  public swapCurrency() {
     const firstCurrency = this.form.get('currencyFirst')?.value;
     const secondCurrency = this.form.get('currencySecond')?.value;
-    const firstValue = this.form.get('firstValue')?.value;
 
     this.form.patchValue({
       currencyFirst: secondCurrency,
       currencySecond: firstCurrency,
-      firstValue: firstValue,
-    });
+    }, { emitEvent: false });
 
     this.convertCurrency();
   }
@@ -110,7 +107,7 @@ export class CurrencyConvertorFormComponent implements OnInit{
     const firstCurrency = this.form.get('currencyFirst')?.value;
     const secondCurrency = this.form.get('currencySecond')?.value;
 
-    this.getCurrencyConvertData(firstCurrency, secondCurrency).subscribe(coefficient => {
+    this.currencyDataService.getCurrencyCoefficient(firstCurrency, secondCurrency).subscribe(coefficient => {
       if (changedField === 'firstValue') {
         const firstValue = this.form.get('firstValue')?.value;
         this.form.patchValue({
